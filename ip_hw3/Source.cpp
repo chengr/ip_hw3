@@ -12,24 +12,27 @@ using namespace cv;
 Mat src,img, gray_image;
 double avg(int x,int y);
 double avg2(int x,int y,double in);
+int checks2(int x,int y);
 int checks(int x,int y);
 /** @function main */
 int main(int argc, char** argv)
 {
-	String ins="len_full";
+	int var=50;
+	String ins="F16";
 	/// Read the image 
 	src = imread(ins+".jpg", 1 );
 	cvtColor( src, gray_image, CV_RGB2GRAY );
+	cvtColor( src, img, CV_RGB2GRAY );
 	cvtColor( src, src, CV_RGB2GRAY );
 	int row=src.rows;
 	int col=src.cols;
-	int np=8;
+	int np=3;
 	int sum=(col*row)/np;
 
 
 	const int nrolls=sum;  // number of experiments
 	std::default_random_engine generator(time(0));
-	std::normal_distribution<double> distribution(127.0,30.0);
+	std::normal_distribution<double> distribution(127.0,var);
 	int p[256]={};
 
 	int *noise_v;
@@ -93,10 +96,10 @@ int main(int argc, char** argv)
 			
 				uchar g=src.at<uchar>(Point(i,j));
 				
-				double n=33;
+				double n=var;
 				double ml= avg(i,j);
 				double l=avg2(i,j,ml);
-				double co=(l*l)/(n*n);
+				double co=(n*n)/(l*l);
 				if(co>1){
 					co=1;
 				}
@@ -108,6 +111,15 @@ int main(int argc, char** argv)
 	imshow( "result", gray_image );
 	imwrite( ins+"_result.jpg", gray_image );
 
+	for(int i=0;i<col;i++){
+		for(int j=0;j<row;j++){
+				uchar f=avg(i,j);
+				img.at<uchar>(Point(i,j))= f;
+		}
+	}
+	namedWindow( "avg", CV_WINDOW_AUTOSIZE );
+	imshow( "avg", img );
+	imwrite( ins+"_avg.jpg", img );
 
 	delete []noise_v;
 	waitKey(0);
@@ -115,28 +127,28 @@ int main(int argc, char** argv)
 }
 //
 double avg(int x,int y){
-	int lu=checks(x-1,y-1);
-	int u=checks(x,y-1);
-	int ru=checks(x+1,y-1);
-	int l=checks(x-1,y);
-	int m=checks(x,y);
-	int r=checks(x+1,y);
-	int ld=checks(x-1,y+1);
-	int d=checks(x,y+1);
-	int rd=checks(x+1,y+1);
+	int lu=checks2(x-1,y-1);
+	int u=checks2(x,y-1);
+	int ru=checks2(x+1,y-1);
+	int l=checks2(x-1,y);
+	int m=checks2(x,y);
+	int r=checks2(x+1,y);
+	int ld=checks2(x-1,y+1);
+	int d=checks2(x,y+1);
+	int rd=checks2(x+1,y+1);
 	double color_v=(lu+u+ru+l+m+r+ld+d+rd)/9;
 	return color_v;
 }
 double avg2(int x,int y,double in){
-	int lu=checks(x-1,y-1);
-	int u=checks(x,y-1);
-	int ru=checks(x+1,y-1);
-	int l=checks(x-1,y);
-	int m=checks(x,y);
-	int r=checks(x+1,y);
-	int ld=checks(x-1,y+1);
-	int d=checks(x,y+1);
-	int rd=checks(x+1,y+1);
+	int lu=checks2(x-1,y-1);
+	int u=checks2(x,y-1);
+	int ru=checks2(x+1,y-1);
+	int l=checks2(x-1,y);
+	int m=checks2(x,y);
+	int r=checks2(x+1,y);
+	int ld=checks2(x-1,y+1);
+	int d=checks2(x,y+1);
+	int rd=checks2(x+1,y+1);
 
 
 
@@ -158,6 +170,15 @@ double avg2(int x,int y,double in){
 int checks(int x,int y){
 	if(x>=0&&x<src.cols&&y>=0&&y<src.rows){
 		uchar c=src.at<uchar>(y,x);
+		return 	c;
+	}
+	else
+		return 0;
+}
+
+int checks2(int x,int y){
+	if(x>=0&&x<src.cols&&y>=0&&y<src.rows){
+		uchar c=gray_image.at<uchar>(y,x);
 		return 	c;
 	}
 	else
